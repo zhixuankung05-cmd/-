@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Needs vs Wants - Super Fun Game!</title>
+    <style>
+        /* --- COLORFUL STYLING --- */
+        body {
+            margin: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(45deg, #FF9A9E, #FECFEF, #E0C3FC, #8EC5FC);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 5px solid #fff;
+            position: relative;
+        }
+
+        h1 { color: #FF6B6B; font-size: 1.5rem; margin-top: 0; }
+        
+        /* --- ANIMATIONS --- */
+        .bounce { animation: bounce 0.6s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 
+            0% { transform: translateX(0); } 
+            25% { transform: translateX(-10px); } 
+            50% { transform: translateX(10px); } 
+            100% { transform: translateX(0); } 
+        }
+
+        .pop { animation: pop 0.3s; }
+        @keyframes pop { 0% { transform: scale(0.8); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* --- GAME ELEMENTS --- */
+        #emoji-display {
+            font-size: 8rem;
+            margin: 10px 0;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+            cursor: pointer;
+        }
+
+        #item-name {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .game-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        }
+
+        .game-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        #btn-need { background-color: #4ECDC4; } /* Teal */
+        #btn-want { background-color: #FF6B6B; } /* Red/Pink */
+
+        #progress-bar {
+            width: 100%;
+            background-color: #eee;
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background-color: #FFD93D;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        /* --- OVERLAYS --- */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .hidden { display: none; }
+        
+        #start-btn, #restart-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background-color: #6C63FF;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        #feedback-msg {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #fff;
+            pointer-events: none;
+            display: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="overlay">
+        <h1 style="font-size: 3rem;">Needs vs Wants!</h1>
+        <p style="font-size: 1.2rem;">Can you help Benny Bear spend money wisely?</p>
+        <button id="start-btn">PLAY GAME! ▶️</button>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <div style="font-size: 5rem;">🏆</div>
+        <h1>GREAT JOB!</h1>
+        <p>You answered <span id="final-score">0</span>/10 correctly!</p>
+        <button id="restart-btn">PLAY AGAIN 🔄</button>
+    </div>
+
+    <div id="score-board">Score: <span id="score">0</span></div>
+    
+    <div id="emoji-display" class="bounce">❓</div>
+    <div id="item-name">Loading...</div>
+    
+    <div id="feedback-msg"></div>
+
+    <div class="btn-container">
+        <button id="btn-need" class="game-btn">NEED ✅<br><small style="font-size:0.8rem">(Must have)</small></button>
+        <button id="btn-want" class="game-btn">WANT 🎁<br><small style="font-size:0.8rem">(Fun to have)</small></button>
+    </div>
+
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+</div>
+
+<script>
+    // --- GAME DATA ---
+    // Designed for 5-6 year olds.
+    const allQuestions = [
+        { name: "Water", type: "need", icon: "💧" },
+        { name: "Toy Robot", type: "want", icon: "🤖" },
+        { name: "Broccoli", type: "need", icon: "🥦" },
+        { name: "Candy", type: "want", icon: "🍭" },
+        { name: "House", type: "need", icon: "🏠" },
+        { name: "Video Game", type: "want", icon: "🎮" },
+        { name: "Ice Cream", type: "want", icon: "🍦" },
+        { name: "Clothes", type: "need", icon: "👕" },
+        { name: "Skateboard", type: "want", icon: "🛹" },
+        { name: "Toothbrush", type: "need", icon: "🪥" },
+    ];
+
+    // --- GAME STATE ---
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    const maxQuestions = 10;
+    let audioCtx = null;
+
+    // --- ELEMENTS ---
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const emojiDisplay = document.getElementById('emoji-display');
+    const itemName = document.getElementById('item-name');
+    const scoreDisplay = document.getElementById('score');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const feedbackMsg = document.getElementById('feedback-msg');
+    const progressFill = document.getElementById('progress-fill');
+
+    // --- SOUND GENERATION (No files needed!) ---
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playSound(type) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+            // High pitch ding
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now);
+            osc.stop(now + 0.5);
+        } else if (type === 'wrong') {
+            // Low pitch wobble
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (type === 'win') {
+            // Victory melody
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.setValueAtTime(600, now + 0.2);
+            osc.frequency.setValueAtTime(1000, now + 0.4);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0, now + 1.5);
+            osc.start(now);
+            osc.stop(now + 1.5);
+        }
+    }
+
+    function speakWord(word) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = 0.9; // Slightly slower for kids
+            utterance.pitch = 1.2; // Slightly higher pitch
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // --- GAME LOGIC ---
+    function startGame() {
+        initAudio();
+        startScreen.classList.add('hidden');
+        endScreen.classList.add('hidden');
+        score = 0;
+        currentIndex = 0;
+        scoreDisplay.innerText = score;
+        
+        // Shuffle and pick 10
+        currentQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, maxQuestions);
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentIndex >= maxQuestions) {
+            endGame();
+            return;
+        }
+
+        const q = currentQuestions[currentIndex];
+        emojiDisplay.innerText = q.icon;
+        itemName.innerText = q.name;
+        
+        // Reset animations
+        emojiDisplay.classList.remove('shake');
+        emojiDisplay.classList.add('pop');
+        
+        // Update progress bar
+        const pct = (currentIndex / maxQuestions) * 100;
+        progressFill.style.width = pct + "%";
+
+        // Speak the word for non-readers
+        setTimeout(() => speakWord(q.name), 500);
+    }
+
+    function checkAnswer(answerType) {
+        const q = currentQuestions[currentIndex];
+        const isCorrect = q.type === answerType;
+
+        if (isCorrect) {
+            score++;
+            scoreDisplay.innerText = score;
+            playSound('correct');
+            showFeedback("👍", "#4ECDC4");
+            emojiDisplay.classList.add('pop');
+        } else {
+            playSound('wrong');
+            showFeedback("👎", "#FF6B6B");
+            emojiDisplay.classList.add('shake');
+        }
+
+        currentIndex++;
+        setTimeout(loadQuestion, 1200); // Wait a bit before next question
+    }
+
+    function showFeedback(text, color) {
+        feedbackMsg.innerText = text;
+        feedbackMsg.style.color = color;
+        feedbackMsg.style.display = "block";
+        feedbackMsg.classList.add('pop');
+        
+        setTimeout(() => {
+            feedbackMsg.style.display = "none";
+            feedbackMsg.classList.remove('pop');
+        }, 1000);
+    }
+
+    function endGame() {
+        playSound('win');
+        finalScoreDisplay.innerText = score;
+        progressFill.style.width = "100%";
+        endScreen.classList.remove('hidden');
+        
+        // Confetti effect (Simple DOM based)
+        for(let i=0; i<50; i++) {
+            createConfetti();
+        }
+    }
+
+    function createConfetti() {
+        const confetti = document.createElement('div');
+        confetti.innerText = ['🎉', '⭐', '🎈', '✨'][Math.floor(Math.random()*4)];
+        confetti.style.position = 'absolute';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.fontSize = (Math.random() * 20 + 10) + 'px';
+        confetti.style.transition = 'top 2s ease-in, opacity 2s';
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => {
+            confetti.style.top = '110vh';
+            confetti.style.opacity = '0';
+        }, 100);
+
+        setTimeout(() => {
+            confetti.remove();
+        }, 2100);
+    }
+
+    // --- EVENT LISTENERS ---
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+    
+    document.getElementById('btn-need').addEventListener('click', () => checkAnswer('need'));
+    document.getElementById('btn-want').addEventListener('click', () => checkAnswer('want'));
+
+</script>
+</body>
+</html>
