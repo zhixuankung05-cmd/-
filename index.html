@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wants vs Needs Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Reset & Body Styles --- */
+        body {
+            font-family: 'Fredoka One', 'Comic Sans MS', cursive; /* Fun, bold font for titles */
+            background: linear-gradient(135deg, #FFD180, #FFAB40); /* Warm, gradient background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Use min-height to ensure full coverage */
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+            color: #333;
+            padding: 20px; /* Add some padding around the edges */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* --- Title --- */
+        h1 {
+            color: #8D6E63; /* Earthy brown for contrast */
+            font-size: 3.5rem; /* Larger title */
+            margin-bottom: 20px;
+            text-shadow: 4px 4px #FFF3E0; /* Creamy shadow */
+            letter-spacing: 2px; /* A bit more space between letters */
+            line-height: 1.1;
+        }
+        h1 span {
+            font-size: 0.7em; /* Keep "vs" slightly smaller */
+        }
+
+        /* --- Game Container --- */
+        .game-container {
+            background: linear-gradient(180deg, #FFFFFF, #FFFDE7); /* Soft white to cream gradient */
+            padding: 40px; /* More padding */
+            border-radius: 40px; /* Even more rounded */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); /* Deeper shadow */
+            width: 95%;
+            max-width: 500px; /* Wider max-width */
+            position: relative;
+            border: 8px solid #FFCDD2; /* Soft pink border */
+            transform: rotateZ(-2deg); /* Slightly tilted for playful look */
+            transition: transform 0.3s ease-in-out;
+        }
+        .game-container:hover {
+            transform: rotateZ(0deg); /* Straighten on hover */
+        }
+
+
+        /* --- Score Board --- */
+        .score-board {
+            font-family: 'Open Sans', sans-serif; /* Simpler font for score */
+            font-size: 1.4rem;
+            color: #6A1B9A; /* Deep purple */
+            margin-bottom: 25px;
+            font-weight: bold;
+            background: #E1BEE7; /* Light purple background for score */
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block; /* Fit content */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- Item Card --- */
+        .item-card {
+            font-size: 10rem; /* Super huge Emoji */
+            margin: 25px 0;
+            animation: float 4s ease-in-out infinite alternate; /* Slower float, alternate direction */
+            cursor: default;
+            user-select: none;
+            transition: transform 0.3s ease-out; /* Smooth transitions */
+        }
+
+        .item-name {
+            font-family: 'Open Sans', sans-serif; /* Simpler font for item name */
+            font-size: 2.2rem; /* Even bigger text */
+            color: #424242; /* Darker grey */
+            margin-bottom: 30px;
+            font-weight: bold;
+            background: #E0F2F7; /* Light blue background for text */
+            padding: 10px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- Buttons --- */
+        .buttons-area {
+            display: flex;
+            justify-content: space-around; /* Space evenly */
+            gap: 25px; /* More space between buttons */
+            margin-top: 20px; /* More space from item name */
+        }
+
+        .btn {
+            flex: 1;
+            padding: 22px 15px; /* Taller buttons */
+            border: none;
+            border-radius: 30px; /* Very rounded, pill-shaped */
+            font-size: 2rem; /* Even bigger text on buttons */
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s, box-shadow 0.1s;
+            font-family: 'Fredoka One', cursive; /* Use fun font for buttons too */
+            box-shadow: 0 8px 0 rgba(0,0,0,0.3); /* Deeper shadow */
+            text-align: center;
+            line-height: 1.2;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Text shadow on buttons */
+        }
+
+        .btn:active {
+            transform: translateY(8px); /* Deeper press effect */
+            box-shadow: 0 0px 0 rgba(0,0,0,0.3); /* Shadow disappears on press */
+        }
+
+        .btn-need {
+            background-color: #66BB6A; /* Soft green */
+        }
+        .btn-need:hover {
+            background-color: #81C784; /* Lighter green on hover */
+        }
+
+        .btn-want {
+            background-color: #FF8A65; /* Soft orange/coral */
+        }
+        .btn-want:hover {
+            background-color: #FFAB91; /* Lighter orange on hover */
+        }
+
+        /* --- Feedback Message --- */
+        #feedback {
+            height: 45px; /* Taller feedback area */
+            margin-top: 25px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.8rem; /* Bigger feedback text */
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        .correct { 
+            color: #388E3C; /* Darker green for correct */
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncier animation */
+        } 
+        .wrong { 
+            color: #D32F2F; /* Darker red for wrong */
+            animation: shake 0.6s ease-in-out; /* Sharper shake */
+        }
+
+        /* --- Animations --- */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50% { transform: translateY(-15px) rotate(3deg) scale(1.05); } /* More movement */
+            100% { transform: translateY(0px) rotate(0deg) scale(1); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.2); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.1); opacity: 0; }
+            50% { transform: scale(1.3); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-12px); } /* Wider shake */
+            20%, 40%, 60%, 80% { transform: translateX(12px); }
+        }
+
+        /* Confetti Styling */
+        .confetti {
+            position: absolute;
+            width: 15px; /* Even larger confetti */
+            height: 15px;
+            background-color: #f00; /* Placeholder, color is randomized by JS */
+            animation: fall linear forwards;
+            border-radius: 50%;
+            opacity: 0.9;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(1080deg) scale(0.6); opacity: 0; } /* Longer fall, more spin */
+        }
+
+        /* --- Volume Button --- */
+        .volume-button {
+            position: fixed; /* Fixed position */
+            top: 25px;
+            right: 25px;
+            background: #FFE0B2; /* Light orange background */
+            border: 3px solid #FFAB40; /* Matching border */
+            border-radius: 50%;
+            width: 55px; /* Larger button */
+            height: 55px;
+            font-size: 2.2rem; /* Larger icon */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 100; /* Ensure it's on top */
+            transition: transform 0.2s;
+        }
+        .volume-button:active {
+            transform: scale(0.9);
+        }
+
+        /* --- End Screen --- */
+        #end-screen {
+            animation: pop 0.8s ease-out;
+        }
+        #end-screen div {
+            font-size: 6rem; /* Even bigger emoji */
+            margin-bottom: 15px;
+        }
+        #end-screen h2 {
+            font-size: 3.5rem; /* Bigger title */
+            color: #C2185B; /* Deep pink */
+            text-shadow: 2px 2px #F8BBD0; /* Soft pink shadow */
+            margin-bottom: 10px;
+        }
+        #end-screen p {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1.6rem;
+            margin-top: 15px;
+            color: #5D4037; /* Dark brown text */
+            line-height: 1.4;
+        }
+        #end-screen .btn {
+            margin-top: 40px; /* More space */
+            padding: 25px;
+            font-size: 2.2rem;
+            border-radius: 35px; /* More rounded */
+            background-color: #64B5F6; /* Soft blue for play again */
+            box-shadow: 0 10px 0 rgba(0,0,0,0.3);
+        }
+        #end-screen .btn:hover {
+             background-color: #90CAF9;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="volume-btn" class="volume-button" onclick="toggleMute()">🔊</button>
+
+    <h1>Wants <span style="font-size: 0.8em">vs</span> Needs <br> Adventure!</h1>
+
+    <div class="game-container">
+        <div class="score-board">Score: <span id="score">0</span> / <span id="total-questions"></span></div>
+        
+        <div id="game-area">
+            <div class="item-card" id="item-icon">❓</div>
+            <div class="item-name" id="item-text">Loading...</div>
+
+            <div class="buttons-area">
+                <button class="btn btn-need" onclick="checkAnswer('need')">NEED<br><span style="font-size:0.6em; font-family: 'Open Sans', sans-serif;">I must have it!</span></button>
+                <button class="btn btn-want" onclick="checkAnswer('want')">WANT<br><span style="font-size:0.6em; font-family: 'Open Sans', sans-serif;">I like it!</span></button>
+            </div>
+            <div id="feedback"></div>
+        </div>
+
+        <div id="end-screen" style="display:none;">
+            <div style="font-size: 6rem;">🥳</div> <h2>You're a Superstar!</h2>
+            <p>You answered <span id="final-score"></span> out of <span id="final-total"></span> questions correctly!</p>
+            <button class="btn" style="background-color: #64B5F6; width:100%" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <audio id="correct-sfx">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" type="audio/mpeg"> Your browser does not support the audio element.
+    </audio>
+    <audio id="wrong-sfx">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg"> Your browser does not support the audio element.
+    </audio>
+    <audio id="button-sfx">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg"> Your browser does not support the audio element.
+    </audio>
+    <audio id="end-sfx">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" type="audio/mpeg"> Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const items = [
+            { name: "Water", type: "need", icon: "💧" },
+            { name: "Candy", type: "want", icon: "🍬" },
+            { name: "House", type: "need", icon: "🏠" },
+            { name: "Toy Robot", type: "want", icon: "🤖" },
+            { name: "Vegetables", type: "need", icon: "🥦" },
+            { name: "Video Game", type: "want", icon: "🎮" },
+            { name: "Rice", type: "need", icon: "🍚" },
+            { name: "Ice Cream", type: "want", icon: "🍦" },
+            { name: "Clothes", type: "need", icon: "👕" },
+            { name: "New Phone", type: "want", icon: "📱" },
+            { name: "Doctor", type: "need", icon: "👨‍⚕️" },
+            { name: "Bicycle", type: "want", icon: "🚲" },
+            { name: "Food", type: "need", icon: "🍎" },
+            { name: "Stationery", type: "need", icon: "✏️" },
+            { name: "Headphones", type: "want", icon: "🎧" },
+            { name: "Pancakes", type: "want", icon: "🥞" },
+            { name: "Warm Coat", type: "need", icon: "🧥" },
+            { name: "Sparkling Shoes", type: "want", icon: "✨👟" },
+            { name: "Balloon", type: "want", icon: "🎈" },
+            { name: "Books", type: "need", icon: "📚" },
+        ];
+
+        let currentItemIndex = 0;
+        let score = 0;
+        let shuffledItems = [];
+        let isMuted = false;
+
+        const bgMusic = document.getElementById('bg-music');
+        const correctSfx = document.getElementById('correct-sfx');
+        const wrongSfx = document.getElementById('wrong-sfx');
+        const buttonSfx = document.getElementById('button-sfx');
+        const endSfx = document.getElementById('end-sfx');
+        const volumeBtn = document.getElementById('volume-btn');
+
+        bgMusic.volume = 0.2; 
+        correctSfx.volume = 0.8;
+        wrongSfx.volume = 0.8;
+        buttonSfx.volume = 0.6;
+        endSfx.volume = 0.9;
+
+        function initGame() {
+            score = 0;
+            currentItemIndex = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('total-questions').innerText = items.length;
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('end-screen').style.display = 'none';
+            
+            shuffledItems = [...items].sort(() => Math.random() - 0.5);
+            
+            loadItem();
+            playMusic();
+        }
+
+        function loadItem() {
+            if (currentItemIndex >= shuffledItems.length) {
+                endGame();
+                return;
+            }
+            const item = shuffledItems[currentItemIndex];
+            document.getElementById('item-icon').innerText = item.icon;
+            document.getElementById('item-text').innerText = item.name;
+            document.getElementById('feedback').innerText = "";
+            document.getElementById('feedback').className = ""; 
+            
+            const card = document.getElementById('item-icon');
+            card.style.animation = 'none'; 
+            card.offsetHeight; 
+            card.style.animation = 'float 4s ease-in-out infinite alternate, pop 0.6s ease-out'; // Slightly faster pop
+        }
+
+        function checkAnswer(answer) {
+            playSfx(buttonSfx);
+            const item = shuffledItems[currentItemIndex];
+            const feedbackEl = document.getElementById('feedback');
+            const itemCard = document.getElementById('item-icon');
+
+            if (answer === item.type) {
+                score++;
+                document.getElementById('score').innerText = score;
+                feedbackEl.innerText = "✅ Super Correct!";
+                feedbackEl.className = "correct";
+                playSfx(correctSfx);
+                celebrate();
+            } else {
+                feedbackEl.innerText = `❌ Nope! That's a ${item.type.toUpperCase()}.`; // More direct
+                feedbackEl.className = "wrong";
+                playSfx(wrongSfx);
+                itemCard.style.animation = 'none';
+                itemCard.offsetHeight; 
+                itemCard.style.animation = 'shake 0.6s ease-in-out, float 4s ease-in-out infinite alternate 0.6s'; // Shake then float
+            }
+
+            setTimeout(() => {
+                currentItemIndex++;
+                loadItem();
+            }, 1800); // Slightly longer delay for enhanced feedback
+        }
+
+        function endGame() {
+            bgMusic.pause();
+            playSfx(endSfx);
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-total').innerText = items.length;
+            celebrate(); 
+            celebrate(); // More confetti for end screen
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        function playMusic() {
+            if (!isMuted) {
+                bgMusic.play().catch(e => console.log("Background music play failed:", e));
+            }
+        }
+
+        function playSfx(sfxElement) {
+            if (!isMuted) {
+                sfxElement.currentTime = 0; 
+                sfxElement.play().catch(e => console.log("SFX play failed:", e));
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            bgMusic.muted = isMuted;
+            correctSfx.muted = isMuted;
+            wrongSfx.muted = isMuted;
+            buttonSfx.muted = isMuted;
+            endSfx.muted = isMuted;
+
+            volumeBtn.innerText = isMuted ? '🔇' : '🔊';
+
+            if (!isMuted) {
+                playMusic();
+            }
+        }
+
+        function celebrate() {
+            const colors = ['#FFD700', '#FF6347', '#3CB371', '#6495ED', '#FF69B4', '#FFA07A', '#98FB98', '#ADD8E6', '#F08080', '#DDA0DD']; // Brighter confetti colors
+            for (let i = 0; i < 60; i++) { // Even more confetti
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = Math.random() * -30 + 'vh'; 
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 3 + 2.5) + 's'; 
+                confetti.style.animationDelay = (Math.random() * 0.8) + 's'; 
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 6000); // Longer cleanup
+            }
+        }
+
+        window.onload = initGame;
+
+        document.body.addEventListener('click', () => {
+            if (bgMusic.paused && !isMuted) {
+                playMusic();
+            }
+        }, { once: true }); 
+        
+    </script>
+</body>
+</html>
