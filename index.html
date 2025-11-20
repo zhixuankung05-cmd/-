@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wants vs Needs Game</title>
+    <style>
+        /* --- CSS Styles for Kids --- */
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #E0F7FA;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        h1 {
+            color: #006064;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px #FFFFFF;
+        }
+
+        .game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            color: #FF6F00;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* The Item Card */
+        .item-card {
+            font-size: 8rem; /* Huge Emoji */
+            margin: 20px 0;
+            animation: float 3s ease-in-out infinite;
+            cursor: default;
+            user-select: none;
+        }
+
+        .item-name {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .buttons-area {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-family: inherit;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .btn-need {
+            background-color: #4CAF50; /* Green */
+        }
+
+        .btn-want {
+            background-color: #FF4081; /* Pink */
+        }
+
+        /* Feedback Message */
+        #feedback {
+            height: 30px;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .correct { color: green; }
+        .wrong { color: red; }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Confetti (Simple CSS implementation) */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Wants <span style="font-size: 0.8em">vs</span> Needs</h1>
+
+    <div class="game-container">
+        <div class="score-board">Score: <span id="score">0</span> / 10</div>
+        
+        <div id="game-area">
+            <div class="item-card" id="item-icon">❓</div>
+            <div class="item-name" id="item-text">Loading...</div>
+
+            <div class="buttons-area">
+                <button class="btn btn-need" onclick="checkAnswer('need')">NEED<br><span style="font-size:0.6em">I must have it!</span></button>
+                <button class="btn btn-want" onclick="checkAnswer('want')">WANT<br><span style="font-size:0.6em">I like it!</span></button>
+            </div>
+            <div id="feedback"></div>
+        </div>
+
+        <div id="end-screen" style="display:none;">
+            <div style="font-size: 4rem;">🎉</div>
+            <h2>Good Job!</h2>
+            <p>You finished the game.</p>
+            <button class="btn" style="background-color: #2196F3; width:100%" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        // You can add more items here!
+        const items = [
+            { name: "Water", type: "need", icon: "💧" },
+            { name: "Candy", type: "want", icon: "🍬" },
+            { name: "House", type: "need", icon: "🏠" },
+            { name: "Toy Robot", type: "want", icon: "🤖" },
+            { name: "Vegetables", type: "need", icon: "🥦" },
+            { name: "Video Game", type: "want", icon: "🎮" },
+            { name: "Sleep", type: "need", icon: "😴" },
+            { name: "Ice Cream", type: "want", icon: "🍦" },
+            { name: "Clothes", type: "need", icon: "👕" },
+            { name: "New Phone", type: "want", icon: "📱" }
+        ];
+
+        let currentItemIndex = 0;
+        let score = 0;
+        let shuffledItems = [];
+
+        // --- Game Logic ---
+
+        function initGame() {
+            score = 0;
+            currentItemIndex = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('end-screen').style.display = 'none';
+            
+            // Shuffle the questions so it's different every time
+            shuffledItems = [...items].sort(() => Math.random() - 0.5);
+            
+            loadItem();
+        }
+
+        function loadItem() {
+            if (currentItemIndex >= shuffledItems.length) {
+                endGame();
+                return;
+            }
+            const item = shuffledItems[currentItemIndex];
+            document.getElementById('item-icon').innerText = item.icon;
+            document.getElementById('item-text').innerText = item.name;
+            document.getElementById('feedback').innerText = "";
+            
+            // Add pop animation
+            const card = document.getElementById('item-icon');
+            card.style.animation = 'none';
+            card.offsetHeight; /* trigger reflow */
+            card.style.animation = 'float 3s ease-in-out infinite, pop 0.5s ease-out';
+        }
+
+        function checkAnswer(answer) {
+            const item = shuffledItems[currentItemIndex];
+            const feedbackEl = document.getElementById('feedback');
+
+            if (answer === item.type) {
+                score++;
+                document.getElementById('score').innerText = score;
+                feedbackEl.innerText = "✅ Correct! Great job!";
+                feedbackEl.className = "correct";
+                celebrate(); // Confetti effect
+            } else {
+                feedbackEl.innerText = "❌ Oops! Try again.";
+                feedbackEl.className = "wrong";
+                // Don't advance immediately if wrong? Or advance anyway? 
+                // Let's advance to keep flow but maybe shake the screen.
+            }
+
+            // Small delay before next question so they see the feedback
+            setTimeout(() => {
+                currentItemIndex++;
+                loadItem();
+            }, 1000);
+        }
+
+        function endGame() {
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            celebrate();
+            celebrate();
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        // --- Visual Effects (Confetti) ---
+        function celebrate() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                document.body.appendChild(confetti);
+                
+                // Clean up
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Start the game
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>
